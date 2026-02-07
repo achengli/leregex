@@ -8,6 +8,8 @@
  *                  lua.
  ***************************************************************************/
 #include "leregex.h"
+#include <stdio.h>
+#include <string.h>
 
 int r(lua_State *L)
 {
@@ -211,15 +213,24 @@ static char *__string_replace(const char *string, ssize_t from, ssize_t to, cons
     return ret;
 }
 
+static char *__substring(const char *string, ssize_t from, ssize_t to)
+{
+    char *ret = malloc(to - from + 1);
+    snprintf(ret, to - from, "%s", string+from);
+    return ret;
+}
+
 int replace(lua_State *L)
 {
-    const char *string = luaL_checkstring(L, 1);
+    unsigned idx;
+    const char *string, *substitution;
     bool is_string = false;
     regex_t *rx;
     struct LeRegex_t *leregex;
     regmatch_t *match;
     int retval = 1;
 
+    string = luaL_checkstring(L, 1);
     if (string == NULL)
         return 0;
 
@@ -245,6 +256,11 @@ int replace(lua_State *L)
         is_string = true;
     }
 
+    substitution = luaL_checkstring(L, 3);
+    if (substitution == NULL) {
+        retval = 0;
+        goto replace_out;
+    }
 
     int blocks = __match_bloc_count(leregex->expression);
 
@@ -264,6 +280,35 @@ int replace(lua_State *L)
 
     // TODO: Implement substitution logic
 
+    char *sidx = malloc(16);
+    char *string_copy = malloc(strlen(string)+1);
+    memcpy(string_copy, string, strlen(string)+1);
+
+    for (idx = 1; idx < blocks+1; idx++) {
+        sprintf(sidx, "\\%lu", (unsigned long)idx);
+        char *k = strstr(substitution, sidx);
+
+        if (k == NULL) {
+            free(sidx);
+            retval = 0;
+            break;
+        }
+        
+        unsigned from = k - substitution;
+        unsigned to = from + strlen(sidx);
+        char *substring = __substring(string, match[idx].rm_so, match[idx].rm_eo);
+        char *replaced = __string_replace(substitution, from, to, substring);
+        char *string_iter = __string_replace(string_copy, match[0].rm_so, match[0].rm_eo, replaced);
+        free(string_copy);
+        string_copy = malloc(strlen(string_iter) + 1);
+        memcpy(string_copy, string_iter, strlen(string_iter) + 1);
+        free(string_iter);
+        free(substring);
+    }
+    free(sidx);
+    lua_pushstring(L, (const char *)string_copy);
+    free(string_copy);
+    free(match);
 
 replace_out:
     if (is_string) {
@@ -271,6 +316,18 @@ replace_out:
         free(leregex);
     }
 
+    return retval;
+}
+
+int replace_all(lua_State *L){
+    int retval = 1;
+    // TODO
+    return retval;
+}
+
+int replace_n(lua_State *L){
+    int retval = 1;
+    // TODO
     return retval;
 }
 
