@@ -1,0 +1,9 @@
+#ifndef LEREGEX_VERSION_H
+#define LEREGEX_VERSION_H
+
+#define LEREGEX_VERSION 10000
+
+#define LEREGEX_MAJOR 1
+#define LEREGEX_MINOR 0
+#define LEREGEX_RELEASE 0
+#endif

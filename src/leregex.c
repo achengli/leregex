@@ -8,6 +8,8 @@
  *                  lua.
  ***************************************************************************/
 #include "leregex.h"
+#include "version.h"
+#include <regex.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -331,23 +333,49 @@ int replace_n(lua_State *L){
     return retval;
 }
 
-static void lua_pushkeymethod(lua_State* L, const char *key, int (*function)(lua_State *))
+static void lua_push_key_method(lua_State* L, const char *key, int (*function)(lua_State *))
 {
     lua_pushcfunction(L, function);
     lua_setfield(L, -2, key);
 }
 
+struct RegexConstants_t {
+    int reg_constant;
+    const char *lua_name;
+};
+
+const struct RegexConstants_t leregex_constants[] = {
+    {REG_EXTENDED, "leregex_extended"},
+    {REG_ICASE, "leregex_icase"},
+    {REG_NOSUB, "leregex_nosub"},
+    {REG_NEWLINE, "leregex_newline"},
+    {REG_NOTBOL, "leregex_notbol"},
+    {REG_NOTEOL, "leregex_noteol"},
+    {-1, NULL},
+};
+
+static void lua_export_regex_constants(lua_State *L)
+{
+    unsigned idx;
+    for (idx = 0; leregex_constants[idx].lua_name != NULL; idx++){
+        lua_pushinteger(L, leregex_constants[idx].reg_constant);
+        lua_setfield(L, -2, leregex_constants[idx].lua_name);
+    }
+}
+
 
 int luaopen_leregex(lua_State *L){
     lua_newtable(L);
-    lua_pushkeymethod(L, "r", r);
-    lua_pushkeymethod(L, "match", match);
-    lua_pushkeymethod(L, "match_all", match_all);
+    lua_push_key_method(L, "r", r);
+    lua_push_key_method(L, "match", match);
+    lua_push_key_method(L, "match_all", match_all);
+
+    lua_export_regex_constants(L);
 
     lua_newtable(L);
-    lua_pushinteger(L, 101);
+    lua_pushinteger(L, LEREGEX_VERSION);
     lua_setfield(L, -2, "version_number");
-    lua_pushstring(L, "1.0.1");
+    lua_pushstring(L, "" STR(LEREGEX_MAJOR) "." STR(LEREGEX_MINOR) "." STR(LEREGEX_RELEASE) "");
     lua_setfield(L, -2, "version_string");
     lua_setfield(L, -2, "version");
 
