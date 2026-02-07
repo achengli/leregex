@@ -8,11 +8,6 @@
  *                  lua.
  ***************************************************************************/
 #include "leregex.h"
-#include <lauxlib.h>
-#include <lua.h>
-#include <regex.h>
-#include <stdbool.h>
-#include <stdio.h>
 
 int r(lua_State *L)
 {
@@ -206,13 +201,11 @@ static int __match_bloc_count(const char *string)
 static char *__string_replace(const char *string, ssize_t from, ssize_t to, const char *substitution)
 {
     const size_t len = strlen(string) - (to - from) + strlen(substitution);
-    printf("len: %lu\n", len);
     char *ret = malloc(len); 
     char *copy = malloc(strlen(string) + 1);
     memcpy(copy, string, strlen(string) + 1);
 
     copy[from] = '\0';
-    sprintf(ret, "%s%s%s", copy, (char *) substitution, copy+to+1);
 
     free(copy);
     return ret;
