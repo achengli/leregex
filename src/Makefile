@@ -7,7 +7,7 @@
  ###########################################################################
 LUA ?= lua5.1
 LUA_CFLAGS = 
-LUA_LIBS = -llua -lm -ldl
+LUA_LIBS =  -lm -ldl
 OUT = leregex
 
 MAJOR ?= 1
@@ -20,6 +20,9 @@ CFLAGS ?= -fPIC
 OS_ID := $(shell . /etc/os-release; echo $$ID)
 ifeq ($(OS_ID),ubuntu)
 	LUA_CFLAGS += -I/usr/include/lua5.4
+	LUA_LIBS += -llua5.4
+else
+	LUA_LIBS += -llua
 endif
 
 all: extract_version $(OUT).so 
