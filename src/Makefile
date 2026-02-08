@@ -16,6 +16,12 @@ RELEASE ?= 0
 
 CFLAGS ?= -fPIC
 
+# Compatibility with github workflows (ubuntu)
+OS_ID := $(shell . /etc/os-release; echo $$ID)
+ifeq ($(OS_ID),ubuntu)
+	LUA_CFLAGS += -I/usr/include/lua5.4
+endif
+
 all: extract_version $(OUT).so 
 
 %.o: %.c
