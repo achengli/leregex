@@ -26,7 +26,8 @@
 #include <stdbool.h>
 
 #define LEREGEX_TYPE "leregex.regex"
-#define STR(x) #x
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
 
 struct LeRegex_t {
     regex_t rx;
