@@ -39,4 +39,4 @@ clean:
 extract_version:
 	sh ./../scripts/extract_version_from_rockspec.sh --export
 
-.PHONY: extract_version
+.PHONY: extract_version clean
