@@ -11,10 +11,7 @@ package.cpath   = test_path .. "../src/?.so;" .. package.cpath
 local leregex = require'leregex'
 
 local p = "jkenjke hello ikebnrjk jkbne hello"
-local r = leregex.r("hello")
-local m = leregex.match_all(p, r)
-
-print_table(leregex)
+local m = leregex.match_all(p, 'hello')
 
 for _, v in pairs(m) do
     assert(string.sub(p, v.from, v.to) == v.match)
