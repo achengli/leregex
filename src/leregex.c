@@ -9,6 +9,7 @@
  ***************************************************************************/
 #include "leregex.h"
 #include "version.h"
+#include <lauxlib.h>
 #include <regex.h>
 #include <stdio.h>
 #include <string.h>
@@ -26,7 +27,6 @@ int r(lua_State *L)
     leregex = (struct LeRegex_t *)lua_newuserdata(L, sizeof(struct LeRegex_t) + strlen(regular_expression) + 1);
 #endif
 
-    memcpy(leregex->expression, regular_expression, strlen(regular_expression)+1);
 
     if (regular_expression == NULL)
         return 0;
@@ -34,8 +34,11 @@ int r(lua_State *L)
     if (lua_isinteger(L, 2))
         reg_flags = lua_tointeger(L, 2);
 
-    if (regcomp(&leregex->rx, regular_expression, reg_flags) != 0)
+    memcpy(leregex->expression, regular_expression, strlen(regular_expression)+1);
+
+    if (regcomp(&leregex->rx, regular_expression, reg_flags) != 0) {
         return 0;
+    }
 
     luaL_getmetatable(L, LEREGEX_TYPE);
     lua_setmetatable(L, -2);
@@ -240,14 +243,13 @@ int replace(lua_State *L)
     if (leregex != NULL){
         rx = &leregex->rx;
     } else {
-        leregex = malloc(sizeof(struct LeRegex_t));
+        const char *regex = luaL_checkstring(L, 2);
+        rx = &leregex->rx;
+
+        leregex = malloc(sizeof(struct LeRegex_t) + strlen(regex) + 1);
         if (leregex == NULL)
             return 0;
 
-        rx = &leregex->rx;
-
-        const char *regex = luaL_checkstring(L, 2);
-        leregex->expression = malloc(strlen(regex) + 1);
         memcpy(leregex->expression, regex, strlen(regex) + 1);
 
         if (regcomp(rx, regex, REG_EXTENDED) != 0) {
@@ -365,6 +367,11 @@ static void lua_export_regex_constants(lua_State *L)
 
 
 int luaopen_leregex(lua_State *L){
+    luaL_newmetatable(L, LEREGEX_TYPE);
+    lua_pushvalue(L,-1);
+    lua_setfield(L, -2, "__index");
+    lua_pop(L, 1);
+
     lua_newtable(L);
     lua_push_key_method(L, "r", r);
     lua_push_key_method(L, "match", match);

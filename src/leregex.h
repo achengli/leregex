@@ -31,7 +31,7 @@
 
 struct LeRegex_t {
     regex_t rx;
-    char *expression;
+    char expression[];
 };
 
 int r(lua_State *L);

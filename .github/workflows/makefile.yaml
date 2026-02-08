@@ -1,0 +1,36 @@
+name: Makefile CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Lua
+        run: |
+        sudo apt-get update
+        sudo apt-get install -y lua5.4 make
+
+      - name: Build
+        run: |
+        make -C src/
+
+      - name: Run tests
+        run: |
+        lua test/leregex_test.lua
+        - name: Install dependencies
+        run: make
+
+      - name: Run check
+        run: make check
+
+      - name: Run distcheck
+        run: make distcheck
